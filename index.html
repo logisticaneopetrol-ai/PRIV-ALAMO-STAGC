@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privada Álamo · Control de acceso</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f5d46">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Álamo">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f2ec;--surface:#fff;--ink:#1d2a22;--muted:#5d6b62;--line:#d5d9cf;--brand:#2f5d46;--brand-ink:#fff;--ok:#1f8a4c;--okbg:#d9f2e2;--bad:#c23a2e;--badbg:#f9dcd8;--warn:#9a6a00;--warnbg:#fbeec8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a16;--surface:#1e2721;--ink:#e8eee9;--muted:#9bab9f;--line:#33403a;--brand:#6fb48f;--brand-ink:#0f1a14;--ok:#5ed08a;--okbg:#17382a;--bad:#ff8a7e;--badbg:#44211d;--warn:#e6b84a;--warnbg:#3d3213}}
+:root[data-theme="dark"]{--bg:#141a16;--surface:#1e2721;--ink:#e8eee9;--muted:#9bab9f;--line:#33403a;--brand:#6fb48f;--brand-ink:#0f1a14;--ok:#5ed08a;--okbg:#17382a;--bad:#ff8a7e;--badbg:#44211d;--warn:#e6b84a;--warnbg:#3d3213}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--brand);color:var(--brand-ink)}
+header b{font-size:27px;letter-spacing:.03em;font-weight:600}
+button{font-family:inherit;cursor:pointer}
+#mbtn{width:44px;height:44px;border:1px solid currentColor;border-radius:10px;background:transparent;color:inherit;font-size:22px}
+#menu{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 60px);z-index:20;display:flex;flex-direction:column;min-width:200px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden}
+#menu button{padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font-size:16px;font-weight:600;text-align:left}
+main{max-width:980px;margin:0 auto;padding:18px}
+.note{font-size:13px;color:var(--muted);margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+h2{margin:0 0 12px;font-size:20px}
+label{display:block;font-size:14px;color:var(--muted);margin:12px 0 6px}
+select,input,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:90px;font-size:13px}
+.dur{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dur button{padding:16px 0;border:2px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);font-size:20px;font-weight:700}
+.dur button[aria-pressed="true"]{border-color:var(--brand);background:var(--brand);color:var(--brand-ink)}
+.big{display:block;width:100%;margin-top:14px;padding:17px;border:0;border-radius:12px;background:var(--brand);color:var(--brand-ink);font-size:18px;font-weight:700}
+.big.alt{background:transparent;color:var(--brand);border:2px solid var(--brand)}
+.ghost{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);font-size:14px;font-weight:600}
+.qrbox{text-align:center}
+.qrbox img{width:min(270px,72vw);height:auto;image-rendering:pixelated;border-radius:8px}
+.count{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;margin:8px 0 0}
+.who{color:var(--muted);margin:2px 0 0}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:700}
+.t-ok{background:var(--okbg);color:var(--ok)}.t-bad{background:var(--badbg);color:var(--bad)}.t-warn{background:var(--warnbg);color:var(--warn)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;color:var(--muted);font-weight:600}
+.screen{border-radius:16px;padding:26px 20px;text-align:center;min-height:280px;display:flex;flex-direction:column;justify-content:center;gap:6px;background:var(--surface);border:2px dashed var(--line);color:var(--muted);margin-bottom:16px}
+.screen.ok{background:var(--okbg);border:2px solid var(--ok);color:var(--ink)}
+.screen.bad{background:var(--badbg);border:2px solid var(--bad);color:var(--ink)}
+.screen h3{margin:0;font-size:clamp(28px,7vw,44px)}
+.screen.ok h3{color:var(--ok)}.screen.bad h3{color:var(--bad)}
+.screen .house{font-size:clamp(64px,18vw,120px);font-weight:800;line-height:1}
+.screen .name{font-size:clamp(24px,6vw,36px);font-weight:700}
+.screen .tel{font-size:clamp(22px,5vw,30px);font-variant-numeric:tabular-nums}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row>*{flex:1}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px}
+.form .big{margin-top:0;padding:12px}
+h2,h3,header b,.screen .house,.count{font-family:"Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif}
+h2{font-size:27px;font-weight:600}
+.screen h3{font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.kpi b{display:block;font-size:38px;line-height:1.1;font-family:"Cormorant Garamond",Georgia,serif}
+.kpi span{font-size:13px;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:170px;margin:8px 0 4px}
+.bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;font-size:12px;color:var(--muted)}
+.bar{width:100%;max-width:46px}
+.bar.ok{background:var(--ok)}.bar.no{background:var(--bad)}
+.hb{display:grid;grid-template-columns:70px 1fr 34px;align-items:center;gap:8px;margin:8px 0}
+.hb i{display:block;height:16px;border-radius:8px;background:var(--brand)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><b>Privada Álamo</b><button id="mbtn" aria-label="Menú">☰</button></header>
+<nav id="menu" class="hidden"><button data-v="res" class="lv1">Residente</button><button data-v="cas" class="lv1">Escáner</button><button data-v="adm" class="lv2">Administración</button><button id="mlock">🔒 Acceso restringido</button></nav>
+<main>
+
+<section id="start" class="hidden"><div class="card"><h2>¿Qué celular es este?</h2>
+<button class="big" id="bRes">Soy residente</button>
+<button class="big alt" id="bGate">Administración</button>
+<p class="note" style="margin-top:12px">Elige una sola vez. “Administración” va solo en el celular de la caseta, que guarda la base de datos de Privada Álamo.</p></div></section>
+
+<section id="ulock" class="v hidden"><div class="card"><h2>Acceso restringido</h2><p class="note">Solo personal autorizado de la privada.</p>
+<label for="ucode">Código de acceso</label><input id="ucode" type="password" inputmode="numeric" maxlength="6">
+<button class="big" id="uok">Entrar</button><p class="note" id="ulerr" style="margin-top:10px"></p>
+<p style="margin:14px 0 0"><button class="ghost" id="first" style="font-size:12px;color:var(--muted)">Primera configuración de la caseta</button></p></div></section>
+<section id="gsetup" class="v hidden"><div class="row" style="margin:0 0 12px"><button class="ghost swapb">Volver</button></div><div class="card"><h2>Configurar la caseta</h2>
+<label for="apin">Código de administración (6 dígitos)</label><input id="apin" type="password" inputmode="numeric" maxlength="6"><label for="gpin">Código de caseta para el guardia (6 dígitos)</label><input id="gpin" type="password" inputmode="numeric" maxlength="6">
+<button class="big" id="mk">Crear base de datos</button><p class="note" id="gerr" style="margin-top:10px"></p></div>
+<div class="card"><h2>¿Ya tenías un respaldo?</h2><textarea id="rest0" placeholder="Pega aquí el respaldo"></textarea><button class="big alt" id="rs0">Restaurar respaldo</button></div></section>
+
+<section id="res" class="v hidden">
+<div class="card" id="ract"><h2>Activar mi acceso</h2>
+<p class="note">La administración te envió un código por WhatsApp. Pégalo y crea tu PIN.</p>
+<label for="acode">Código de activación</label><textarea id="acode"></textarea>
+<label for="npin">Crea tu PIN (4 dígitos)</label><input id="npin" type="password" inputmode="numeric" maxlength="4">
+<button class="big" id="act">Activar</button><p class="note" id="aerr" style="margin-top:10px"></p></div>
+<div class="card" id="rpin"><h2 id="rhi">Entrar</h2><label for="upin">Tu PIN</label><input id="upin" type="password" inputmode="numeric" maxlength="4">
+<button class="big" id="unl">Entrar</button><p class="note" id="uerr" style="margin-top:10px"></p></div>
+<div id="rapp" class="hidden">
+<div class="card"><h2>Generar acceso</h2><p class="who" id="hello"></p>
+<label>Vigencia</label><div class="dur" id="dur"><button data-m="10" aria-pressed="false">10 min</button><button data-m="15" aria-pressed="true">15 min</button><button data-m="20" aria-pressed="false">20 min</button></div>
+<label for="vis">Visitante o placa (opcional)</label><input id="vis" maxlength="18" placeholder="Ej. Juan Pérez">
+<button class="big" id="gen">Generar acceso</button></div>
+<div class="card qrbox hidden" id="qrcard"><img id="qr" alt="Código QR de acceso"><p class="count" id="cd"></p><p class="who" id="qrinfo"></p>
+<div class="row"><button class="ghost" id="share">Compartir QR</button><button class="ghost" id="cpc">Copiar texto del QR (prueba)</button></div><p class="note" id="sherr" style="margin-top:8px"></p></div>
+<div class="card"><h2>Mis últimos accesos</h2><div class="scroll"><table id="mine"></table></div>
+<div class="row"><button class="ghost" id="lock">Bloquear</button><button class="ghost" id="wipe">Borrar mi acceso de este celular</button></div></div>
+</div></section>
+
+<section id="cas" class="v hidden">
+<div class="card"><video id="vid" playsinline muted class="hidden" style="width:100%;max-height:320px;object-fit:cover;border-radius:10px;margin-bottom:12px"></video><canvas id="cv" class="hidden"></canvas>
+<button class="big" id="cam" style="margin-top:0">Activar cámara</button><p class="note" id="camerr" style="margin:10px 0 0"></p></div>
+<div class="screen" id="screen"><h3>Esperando QR…</h3><p>Acerca el código a la cámara</p></div>
+<div class="card"><label for="man" style="margin-top:0">Pegar código a mano (prueba)</label><input id="man" placeholder="ALAMO|…"><button class="big alt" id="chk" style="margin-top:10px">Validar</button></div>
+</section>
+
+<section id="adm" class="v hidden">
+<div class="card" id="alock"><h2>Administración</h2><label for="pin">PIN de administrador</label><input id="pin" type="password" inputmode="numeric" maxlength="4"><button class="big" id="unlock">Entrar</button></div>
+<div id="abody" class="hidden">
+<div class="card"><h2>Resumen</h2><div id="sum"></div></div>
+<div class="card"><h2>Bitácora de accesos</h2>
+<div class="row" style="margin:0 0 12px"><select id="fcasa"></select><select id="fres"><option value="">Todos los resultados</option><option>Permitido</option><option>Ya usado</option><option>Vencido</option><option>Inválido</option></select></div>
+<div class="scroll"><table id="log"></table></div></div>
+<div class="card"><h2>Residentes (máx. 2 por casa)</h2><div class="scroll"><table id="resid"></table></div>
+<div class="form"><input id="ac" placeholder="Casa"><input id="an" placeholder="Nombre completo"><input id="at" inputmode="tel" placeholder="Teléfono (10 dígitos)"><button class="big" id="addr">Dar de alta</button></div>
+<p class="note" id="rerr" style="margin-top:10px"></p>
+<p class="note">“Enviar código” abre WhatsApp con el código de activación. “Renovar llave” invalida el celular anterior del residente.</p></div>
+<div class="card"><h2>Códigos de acceso</h2><p class="note">Administración entra a todo. Caseta (guardia) solo al escáner. Seis dígitos cada uno, distintos entre sí.</p><div class="form"><input id="ncA" type="password" inputmode="numeric" maxlength="6" placeholder="Nuevo código de administración"><input id="ncG" type="password" inputmode="numeric" maxlength="6" placeholder="Nuevo código de caseta"><button class="big" id="ncs">Guardar</button></div><p class="note" id="ncm" style="margin-top:8px"></p></div>
+<div class="card"><h2>Respaldo</h2><p class="note">Haz un respaldo cada semana y guárdalo fuera del celular. Contiene la llave maestra: no lo compartas.</p>
+<div class="row"><button class="ghost" id="bcsv">Copiar bitácora (Excel)</button><button class="ghost" id="bjson">Copiar respaldo completo</button></div>
+<textarea id="bk" style="margin-top:10px" placeholder="Aquí aparece el texto a copiar. Para restaurar, pega un respaldo y pulsa Restaurar."></textarea>
+<div class="row"><button class="ghost" id="brest">Restaurar</button></div><p class="note" id="bmsg" style="margin-top:8px"></p></div>
+</div></section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},enc=new TextEncoder();
+function b64(u){return btoa(String.fromCharCode.apply(null,new Uint8Array(u))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function unb(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}
+function ls(k,v){try{if(v===undefined){var x=localStorage.getItem(k);return x?JSON.parse(x):null}localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function hm(ms){return new Date(ms).toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit",hour12:false})}
+function fd(ms){return new Date(ms).toLocaleString("es-MX",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false})}
+function tag(t,c){return '<span class="tag '+c+'">'+t+'</span>'}
+async function hmac(k,s){var ck=await crypto.subtle.importKey("raw",k,{name:"HMAC",hash:"SHA-256"},false,["sign"]);return new Uint8Array(await crypto.subtle.sign("HMAC",ck,enc.encode(s)))}
+async function sha(s){return b64(await crypto.subtle.digest("SHA-256",enc.encode("alamo:"+s)))}
+function rkey(r){return hmac(unb(G.M),"res:"+r.id+":"+r.v)}
+async function pk(pin,salt){var m=await crypto.subtle.importKey("raw",enc.encode(pin),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:150000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+async function seal(pin,o){var s=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));var c=await crypto.subtle.encrypt({name:"AES-GCM",iv:iv},await pk(pin,s),enc.encode(JSON.stringify(o)));return{s:b64(s),iv:b64(iv),c:b64(c)}}
+async function unseal(pin,o){var p=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb(o.iv)},await pk(pin,unb(o.s)),unb(o.c));return JSON.parse(new TextDecoder().decode(p))}
+
+var level=0,G=ls("alamo_gate"),RS=ls("alamo_res"),K=null,cur=null,mins=15,isAdmin=false;
+function saveG(){var lim=Date.now()-7200000;for(var k in G.used)if(G.used[k]<lim)delete G.used[k];ls("alamo_gate",G)}
+function show(v){if(v==="adm"&&level<2||v==="cas"&&level<1)v="ulock";document.querySelectorAll(".v").forEach(function(s){s.classList.toggle("hidden",s.id!==v)});document.querySelectorAll(".lv1").forEach(function(b){b.classList.toggle("hidden",level<1)});document.querySelectorAll(".lv2").forEach(function(b){b.classList.toggle("hidden",level<2)});$("first").classList.toggle("hidden",!!G);$("mlock").textContent=level?"Cerrar acceso restringido":"🔒 Acceso restringido";$("menu").classList.add("hidden");if(v!=="cas")stopCam();render()}
+function boot(){show("res")}
+
+
+$("mbtn").onclick=function(){$("menu").classList.toggle("hidden")};
+document.querySelectorAll("#menu button").forEach(function(b){b.onclick=function(){show(b.dataset.v)}});
+
+document.querySelectorAll(".swapb").forEach(function(b){b.onclick=function(){show(level?"cas":"ulock")}});
+var uf=0,ulk=0;
+$("uok").onclick=async function(){var t=Date.now();if(t<ulk){$("ulerr").textContent="Espera "+Math.ceil((ulk-t)/1000)+" s.";return}
+var h=await sha($("ucode").value);$("ucode").value="";
+if(G&&h===G.admin){level=2;isAdmin=true;uf=0;$("ulerr").textContent="";show("adm")}
+else if(G&&G.guard&&h===G.guard){level=1;uf=0;$("ulerr").textContent="";show("cas")}
+else{uf++;$("ulerr").textContent="Código incorrecto.";if(uf>=3){ulk=t+60000;uf=0;$("ulerr").textContent="Bloqueado 60 s por intentos fallidos."}}};
+$("first").onclick=function(){show("gsetup")};
+$("mlock").onclick=function(){if(level){level=0;isAdmin=false;K=null;show("res")}else show("ulock")};
+$("ncs").onclick=async function(){var a=$("ncA").value,g=$("ncG").value,m=$("ncm");
+if(a&&!/^\d{6}$/.test(a)||g&&!/^\d{6}$/.test(g)||!a&&!g){m.textContent="Escribe al menos un código de 6 dígitos.";return}
+var na=a?await sha(a):G.admin,ng=g?await sha(g):G.guard;if(na===ng){m.textContent="Los dos códigos deben ser distintos.";return}
+G.admin=na;G.guard=ng;saveG();$("ncA").value="";$("ncG").value="";m.textContent="Códigos actualizados."};
+// configuración de la caseta
+$("mk").onclick=async function(){var p=$("apin").value,g=$("gpin").value;if(!/^\d{6}$/.test(p)||!/^\d{6}$/.test(g)||p===g){$("gerr").textContent="Crea dos códigos distintos de 6 dígitos.";return}
+G={M:b64(crypto.getRandomValues(new Uint8Array(32))),admin:await sha(p),guard:await sha(g),R:[],log:[],used:{}};saveG();level=2;isAdmin=true;show("adm")};
+function restore(t,msg){try{var d=JSON.parse(t);if(!d.M||!d.R||!d.admin)throw 0;G={M:d.M,admin:d.admin,guard:d.guard,R:d.R,log:d.log||[],used:d.used||{}};saveG();msg.textContent="Respaldo restaurado.";level=0;isAdmin=false;show("ulock")}catch(e){msg.textContent="El respaldo no es válido."}}
+$("rs0").onclick=function(){restore($("rest0").value,$("gerr"))};
+
+// residente
+$("act").onclick=async function(){try{var o=JSON.parse(new TextDecoder().decode(unb($("acode").value.trim())));var p=$("npin").value;
+if(!o.k||!o.i)throw 0;if(!/^\d{4}$/.test(p)){$("aerr").textContent="El PIN debe tener 4 dígitos.";return}
+RS={m:{n:o.n,c:o.c,t:o.t},s:await seal(p,{i:o.i,v:o.v,k:o.k})};ls("alamo_res",RS);K={i:o.i,v:o.v,k:o.k};$("acode").value="";$("npin").value="";render()}
+catch(e){$("aerr").textContent="El código no es válido. Pídelo de nuevo a la administración."}};
+var fails=0,lockT=0;
+$("unl").onclick=async function(){var t=Date.now();if(t<lockT){$("uerr").textContent="Espera "+Math.ceil((lockT-t)/1000)+" s.";return}
+try{K=await unseal($("upin").value,RS.s);fails=0;$("uerr").textContent="";$("upin").value="";render()}
+catch(e){fails++;$("uerr").textContent="PIN incorrecto.";if(fails>=3){lockT=t+30000;fails=0;$("uerr").textContent="Bloqueado 30 s por intentos fallidos."}}};
+$("lock").onclick=function(){K=null;cur=null;$("qrcard").classList.add("hidden");render()};
+$("wipe").onclick=function(){if(confirm("¿Borrar tu acceso de este celular? Tendrás que activarlo de nuevo.")){RS=null;K=null;cur=null;ls("alamo_res",null);ls("alamo_my",[]);render()}};
+document.querySelectorAll("#dur button").forEach(function(b){b.onclick=function(){mins=+b.dataset.m;document.querySelectorAll("#dur button").forEach(function(x){x.setAttribute("aria-pressed",x===b)})}});
+$("gen").onclick=async function(){var t=Math.floor(Date.now()/1000),e=t+mins*60,id=b64(crypto.getRandomValues(new Uint8Array(3)));
+var v=$("vis").value.replace(/\|/g,"").trim().slice(0,18);var d=["ALAMO",id,K.i+"."+K.v,t,e,v].join("|");
+var sg=b64(await hmac(unb(K.k),d)).slice(0,16);var q=qrcode(0,"M");q.addData(d+"|"+sg);q.make();
+cur={id:id,t:t,e:e,v:v,m:mins,code:d+"|"+sg};$("qr").src=q.createDataURL(8,4);
+var my=ls("alamo_my")||[];my.unshift(cur);ls("alamo_my",my.slice(0,15));$("vis").value="";$("qrcard").classList.remove("hidden");$("sherr").textContent="";render();tick()};
+function tick(){if(!cur)return;var s=Math.max(0,cur.e-Math.floor(Date.now()/1000));
+$("cd").textContent=s?"Vence en "+String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"):"Vencido";
+$("qrinfo").textContent="Vence a las "+hm(cur.e*1000)+(cur.v?" · "+cur.v:"")}
+$("share").onclick=async function(){try{var img=$("qr"),c=document.createElement("canvas");c.width=c.height=480;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,480,480);x.drawImage(img,10,10,460,460);
+var bl=await new Promise(function(r){c.toBlob(r)});var f=new File([bl],"acceso-alamo.png",{type:"image/png"});
+if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:"Acceso Privada Álamo, casa "+RS.m.c+". Vale hasta las "+hm(cur.e*1000)});else $("sherr").textContent="Toma una captura de pantalla del QR y envíala."}
+catch(e){$("sherr").textContent="Toma una captura de pantalla del QR y envíala."}};
+
+$("cpc").onclick=async function(){try{await navigator.clipboard.writeText(cur.code);$("sherr").textContent="Texto copiado. Pégalo en Escáner → Pegar código a mano."}catch(e){$("sherr").textContent="No se pudo copiar."}};
+// caseta: validación
+function who(r){return '<div class="house">Casa '+r.casa+'</div><div class="name">'+esc(r.nombre)+'</div><div class="tel">'+r.tel+'</div>'}
+function fin(cls,title,sub,r,res,vis,mn){$("screen").className="screen "+cls;
+$("screen").innerHTML='<h3>'+title+'</h3>'+(r?who(r):"")+(sub?'<p>'+sub+'</p>':"")+(vis?'<p>Visita: '+esc(vis)+'</p>':"");
+G.log.unshift({t:Date.now(),casa:r?r.casa:"—",nombre:r?r.nombre:"—",tel:r?r.tel:"—",vis:vis||"",m:mn||"",res:res});saveG();
+try{navigator.vibrate&&navigator.vibrate(cls==="ok"?120:[200,80,200])}catch(e){}}
+async function check(code){var p=code.trim().split("|");
+if(p.length!==7||p[0]!=="ALAMO")return fin("bad","QR NO VÁLIDO","No pertenece a Privada Álamo",null,"Inválido");
+var id=p[1],rk=p[2].split("."),t=+p[3],ex=+p[4],vis=p[5],r=G.R.filter(function(x){return String(x.id)===rk[0]})[0];
+if(!r||String(r.v)!==rk[1])return fin("bad","QR NO VÁLIDO","Residente desconocido o llave renovada",null,"Inválido");
+var ok=b64(await hmac(await rkey(r),p.slice(0,6).join("|"))).slice(0,16)===p[6];
+if(!ok)return fin("bad","QR NO VÁLIDO","La firma no coincide",r,"Inválido");
+if(r.on===false)return fin("bad","RESIDENTE DE BAJA","Este residente está desactivado",r,"Inválido");
+var n=Date.now()/1000,mn=Math.round((ex-t)/60);
+if(t>n+90||ex-t>1205||ex<=t)return fin("bad","QR NO VÁLIDO","Horario incoherente",r,"Inválido",vis,mn);
+if(ex<n)return fin("bad","VENCIÓ","a las "+hm(ex*1000),r,"Vencido",vis,mn);
+var uk=id+"."+rk[0];if(G.used[uk])return fin("bad","YA FUE USADO","a las "+hm(G.used[uk]),r,"Ya usado",vis,mn);
+G.used[uk]=Date.now();fin("ok","ACCESO PERMITIDO","Creado "+hm(t*1000)+" · vence "+hm(ex*1000),r,"Permitido",vis,mn)}
+$("chk").onclick=function(){if($("man").value)check($("man").value)};
+
+// cámara
+var stream=null,scanning=false,lastC="",lastT=0,bd=null;
+$("cam").onclick=function(){if(scanning){stopCam();return}
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$("camerr").textContent="Este navegador no permite usar la cámara.";return}
+navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false}).then(function(s){stream=s;var v=$("vid");v.srcObject=s;v.classList.remove("hidden");v.play();scanning=true;$("cam").textContent="Apagar cámara";$("camerr").textContent="";
+try{if("BarcodeDetector" in window)bd=new BarcodeDetector({formats:["qr_code"]})}catch(e){bd=null}loop()})
+.catch(function(){$("camerr").textContent="No se pudo abrir la cámara. Revisa el permiso del navegador."})};
+function stopCam(){scanning=false;if(stream)stream.getTracks().forEach(function(t){t.stop()});stream=null;$("vid").classList.add("hidden");$("cam").textContent="Activar cámara"}
+function got(c){var t=Date.now();if(c===lastC&&t-lastT<4000)return;lastC=c;lastT=t;check(c)}
+function loop(){if(!scanning)return;var v=$("vid");
+if(v.readyState>=2&&v.videoWidth){if(bd){bd.detect(v).then(function(r){if(r.length)got(r[0].rawValue)}).catch(function(){})}
+else if(window.jsQR){var c=$("cv"),x=c.getContext("2d",{willReadFrequently:true});c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);var q=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height);if(q&&q.data)got(q.data)}}
+setTimeout(loop,250)}
+
+// administración
+$("unlock").onclick=async function(){if(await sha($("pin").value)===G.admin){isAdmin=true;render()}else{$("pin").value="";$("pin").placeholder="PIN incorrecto"}};
+$("fcasa").onchange=$("fres").onchange=render;
+function rid(i){return G.R.filter(function(x){return x.id===i})[0]}
+$("addr").onclick=function(){var c=$("ac").value.trim(),n=$("an").value.trim(),t=$("at").value.trim(),d=t.replace(/\D/g,""),e=$("rerr");
+if(!c||!n||d.length!==10){e.textContent="Completa casa, nombre y teléfono de 10 dígitos.";return}
+if(G.R.filter(function(x){return x.casa===c&&x.on!==false}).length>=2){e.textContent="La casa "+c+" ya tiene 2 residentes activos.";return}
+if(G.R.some(function(x){return x.tel.replace(/\D/g,"")===d})){e.textContent="Ese teléfono ya está registrado.";return}
+G.R.push({id:G.R.reduce(function(m,x){return Math.max(m,x.id)},0)+1,casa:c,nombre:n,tel:d.replace(/(\d{3})(\d{3})(\d{4})/,"$1 $2 $3"),v:1,on:true});saveG();
+e.textContent="Residente dado de alta. Pulsa “Enviar código”.";["ac","an","at"].forEach(function(i){$(i).value=""});render()};
+$("resid").onclick=async function(ev){var b=ev.target.closest("button");if(!b)return;var r=rid(+b.dataset.id),a=b.dataset.a;
+if(a==="t"){r.on=r.on===false;saveG()}
+else if(a==="k"){if(!confirm("¿Renovar la llave de "+r.nombre+"? Su celular actual dejará de funcionar y deberá activarse con un código nuevo."))return;r.v++;saveG()}
+else if(a==="p"){var cd=b64(enc.encode(JSON.stringify({i:r.id,v:r.v,c:r.casa,n:r.nombre,t:r.tel,k:b64(await rkey(r))})));copy(cd,"Código de "+r.nombre+".");$("bk").scrollIntoView({block:"center"})}
+else if(a==="c"){var code=b64(enc.encode(JSON.stringify({i:r.id,v:r.v,c:r.casa,n:r.nombre,t:r.tel,k:b64(await rkey(r))})));
+var url=location.origin+location.pathname;var msg="Hola "+r.nombre+", este es tu acceso a Privada Álamo.\n1) Abre: "+url+"\n2) Elige “Soy residente”\n3) Pega este código y crea tu PIN de 4 dígitos:\n\n"+code;
+window.open("https://wa.me/52"+r.tel.replace(/\D/g,"")+"?text="+encodeURIComponent(msg),"_blank")}
+render()};
+async function copy(t,m){$("bk").value=t;$("bk").select();try{await navigator.clipboard.writeText(t);$("bmsg").textContent=m+" Copiado."}catch(e){$("bmsg").textContent=m+" Copia el texto de la caja."}}
+$("bcsv").onclick=function(){var q=function(s){return '"'+String(s).replace(/"/g,'""')+'"'};
+copy("Fecha,Casa,Nombre,Teléfono,Visitante,Min,Resultado\n"+G.log.map(function(l){return[fd(l.t),l.casa,l.nombre,l.tel,l.vis,l.m,l.res].map(q).join(",")}).join("\n"),"Pégalo en Excel o en un correo.")};
+$("bjson").onclick=function(){copy(JSON.stringify(G),"Guárdalo en un lugar seguro.")};
+$("brest").onclick=function(){if(confirm("Esto reemplaza los datos actuales. ¿Continuar?"))restore($("bk").value,$("bmsg"))};
+
+function chart(){
+var d0=new Date();d0.setHours(0,0,0,0);var D=86400000,t0=d0.getTime(),days=[],hoy=0,rej=0,cas={},i;
+for(i=6;i>=0;i--)days.push({s:t0-i*D,ok:0,no:0});
+G.log.forEach(function(l){var ok=l.res==="Permitido";if(l.t>=t0){if(ok)hoy++;else rej++}
+days.forEach(function(d){if(l.t>=d.s&&l.t<d.s+D){if(ok){d.ok++;cas[l.casa]=(cas[l.casa]||0)+1}else d.no++}})});
+var mx=Math.max(1,Math.max.apply(null,days.map(function(d){return d.ok+d.no}))),wk=days.reduce(function(a,d){return a+d.ok},0);
+var top=Object.keys(cas).sort(function(a,b){return cas[b]-cas[a]}).slice(0,5),cm=top.length?cas[top[0]]:1;
+$("sum").innerHTML='<div class="kpis"><div class="kpi"><b>'+hoy+'</b><span>Entradas hoy</span></div><div class="kpi"><b>'+rej+'</b><span>Rechazados hoy</span></div><div class="kpi"><b>'+wk+'</b><span>Entradas en 7 días</span></div><div class="kpi"><b>'+top.length+'</b><span>Casas con visitas</span></div></div>'
++'<p class="note"><span class="tag t-ok">Permitidos</span> <span class="tag t-bad">Rechazados</span> · últimos 7 días</p><div class="bars">'+days.map(function(d){var n=d.ok+d.no;return '<div class="bcol"><span>'+(n||"")+'</span><div class="bar no" style="height:'+Math.round(d.no/mx*110)+'px"></div><div class="bar ok" style="height:'+Math.round(d.ok/mx*110)+'px"></div><span>'+new Date(d.s).toLocaleDateString("es-MX",{weekday:"short"})+'</span></div>'}).join("")+'</div>'
++'<h2 style="margin-top:18px;font-size:22px">Casas con más visitas (7 días)</h2>'+(top.length?top.map(function(c){return '<div class="hb"><span>Casa '+esc(c)+'</span><i style="width:'+Math.max(4,Math.round(cas[c]/cm*100))+'%"></i><b>'+cas[c]+'</b></div>'}).join(""):'<p class="note">Aún no hay visitas registradas.</p>')}
+function render(){
+$("ract").classList.toggle("hidden",!!RS);$("rpin").classList.toggle("hidden",!RS||!!K);$("rapp").classList.toggle("hidden",!K);
+if(RS){$("rhi").textContent="Hola, "+RS.m.n;if(K)$("hello").textContent="Casa "+RS.m.c+" · "+RS.m.n+" · "+RS.m.t}
+var my=ls("alamo_my")||[],now=Date.now()/1000;
+$("mine").innerHTML='<tr><th>Hora</th><th>Visitante</th><th>Min</th><th>Estado</th></tr>'+(my.length?my.map(function(p){return '<tr><td>'+fd(p.t*1000)+'</td><td>'+esc(p.v||"—")+'</td><td>'+p.m+'</td><td>'+(now>p.e?tag("Vencido","t-bad"):tag("Vigente","t-ok"))+'</td></tr>'}).join(""):'<tr><td colspan="4">Aún no generas ningún acceso.</td></tr>');
+if(!G)return;
+$("alock").classList.toggle("hidden",isAdmin);$("abody").classList.toggle("hidden",!isAdmin);
+if(isAdmin){chart();var cs=["Todas las casas"].concat(G.R.map(function(x){return x.casa}).filter(function(v,i,a){return a.indexOf(v)===i}));
+var fc=$("fcasa").value||cs[0];$("fcasa").innerHTML=cs.map(function(c){return '<option>'+esc(c)+'</option>'}).join("");$("fcasa").value=fc;var fr=$("fres").value;
+var rows=G.log.filter(function(l){return(fc===cs[0]||l.casa===fc)&&(!fr||l.res===fr)}).slice(0,200);
+$("log").innerHTML='<tr><th>Fecha</th><th>Casa</th><th>Nombre</th><th>Teléfono</th><th>Visitante</th><th>Min</th><th>Resultado</th></tr>'+(rows.length?rows.map(function(l){var c=l.res==="Permitido"?"t-ok":l.res==="Ya usado"?"t-warn":"t-bad";return '<tr><td>'+fd(l.t)+'</td><td>'+esc(l.casa)+'</td><td>'+esc(l.nombre)+'</td><td>'+l.tel+'</td><td>'+esc(l.vis||"—")+'</td><td>'+(l.m||"—")+'</td><td>'+tag(l.res,c)+'</td></tr>'}).join(""):'<tr><td colspan="7">Sin registros.</td></tr>');
+$("resid").innerHTML='<tr><th>Casa</th><th>Nombre</th><th>Teléfono</th><th>Estado</th><th></th></tr>'+G.R.map(function(x){var a=x.on!==false;return '<tr><td>'+esc(x.casa)+'</td><td>'+esc(x.nombre)+'</td><td>'+x.tel+'</td><td>'+(a?tag("Activo","t-ok"):tag("Inactivo","t-bad"))+'</td><td><button class="ghost" data-a="p" data-id="'+x.id+'">Copiar código</button> <button class="ghost" data-a="c" data-id="'+x.id+'">Enviar código</button> <button class="ghost" data-a="t" data-id="'+x.id+'">'+(a?"Desactivar":"Activar")+'</button> <button class="ghost" data-a="k" data-id="'+x.id+'">Renovar llave</button></td></tr>'}).join("")}}
+setInterval(tick,1000);
+boot();
+})();
+</script>
+<script>if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})</script>
+</body>
+</html>
